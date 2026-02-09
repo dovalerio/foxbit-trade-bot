@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: foxbit-trade-bot
+
+server:
+  port: 8080
+
+foxbit:
+  base-url: https://api.foxbit.com.br
+  api-key: ${FOXBIT_API_KEY}
+  api-secret: ${FOXBIT_API_SECRET}
+
+bot:
+  strategy:
+    buy-below: 300000
+    sell-above: 350000
+
+  symbols:
+    - BTC_BRL
+    - ETH_BRL
+  tick-interval-ms: 60000
+
+
+
+logging:
+  level:
+    root: INFO
