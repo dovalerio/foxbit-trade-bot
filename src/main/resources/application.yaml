@@ -3,25 +3,25 @@ spring:
     name: foxbit-trade-bot
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 foxbit:
-  base-url: https://api.foxbit.com.br
+  base-url: ${FOXBIT_BASE_URL:https://api.foxbit.com.br}
   api-key: ${FOXBIT_API_KEY}
   api-secret: ${FOXBIT_API_SECRET}
 
 bot:
   strategy:
-    buy-below: 300000
-    sell-above: 350000
+    buy-below: ${BOT_STRATEGY_BUY_BELOW:300000}
+    sell-above: ${BOT_STRATEGY_SELL_ABOVE:350000}
+    min-qty: ${BOT_MIN_QTY:0.0001}
+    max-qty: ${BOT_MAX_QTY:0.001}
 
-  symbols:
-    - BTC_BRL
-    - ETH_BRL
-  tick-interval-ms: 60000
-
-
+  symbols: ${BOT_SYMBOLS:BTC_BRL}
+  tick-interval-ms: ${BOT_TICK_INTERVAL_MS:60000}
 
 logging:
+  pattern:
+    console: "%msg%n"
   level:
-    root: INFO
+    root: ${LOG_LEVEL:INFO}

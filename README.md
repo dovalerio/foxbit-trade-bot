@@ -1,77 +1,186 @@
-# foxbit-trade-bot
-Bot para realizar trades na plataforma Foxbit.
+# Foxbit Trade Bot
 
-## Visão geral
-Projeto de bot de trading voltado a criptoativos na Foxbit. O objetivo é automatizar a execução de estratégias de compra e venda, com foco em segurança, controle de risco e observabilidade.
+Bot de trade automatizado para a exchange Foxbit utilizando Kotlin, Spring Boot WebFlux e arquitetura orientada a domínio.
 
-## Objetivos
-- Automatizar operações na Foxbit via API.
-- Permitir parametrização de estratégias e limites de risco.
-- Registrar operações e métricas para análise posterior.
+O projeto foi construído priorizando:
 
-## Escopo (pretendido)
-- Conectar à API da Foxbit (autenticação e envio de ordens).
-- Coletar cotações e livro de ofertas.
-- Executar estratégias simples (ex.: tendência, média móvel, grid).
-- Gerenciar risco (limite de perdas, tamanho de posição).
-- Logs, alertas e relatórios básicos.
+- código limpo
+- separação de responsabilidades
+- configuração externa
+- facilidade de evolução
+- execução segura (paper trade)
 
-## Fora de escopo (por enquanto)
-- Consultoria financeira.
-- Estratégias complexas de alta frequência.
-- Custódia e gestão de chaves fora do ambiente local.
+---
 
-## Requisitos
-- Conta ativa na Foxbit.
-- Chaves de API com permissões adequadas.
-- Ambiente local com dependências do projeto (a definir).
+## Status atual
+
+O bot:
+
+- conecta na API oficial da Foxbit
+- consome dados de mercado (ticker 24h)
+- consulta saldo da conta
+- executa estratégia baseada em thresholds
+- valida risco antes de enviar ordem
+- **simula envio** (não movimenta dinheiro real)
+- suporta múltiplos ativos simultaneamente
+- recebe configuração por variáveis externas
+- possui logs simplificados e amigáveis para leitores de tela
+
+---
+
+## Arquitetura
+
+A aplicação é dividida em camadas.
+
+application -> orquestra o fluxo
+domain -> regras de negócio
+infra -> integração com a Foxbit
+config -> propriedades externas
+arduino
+Copiar
+
+Fluxo do ciclo:
+
+scheduler
+↓
+trading cycle service
+↓
+gateway
+↓
+strategy
+↓
+risk manager
+↓
+paper trade (log)
+yaml
+Copiar
+
+---
+
+## Conceitos importantes
+
+### Strategy
+Decide se deve comprar, vender ou não fazer nada.
+
+### Risk Manager
+Garante que existe saldo antes da operação.
+
+### Gateway
+Traduz chamadas da Foxbit para modelos do domínio.
+
+### Paper Trade
+Mesmo quando aprovado, apenas loga a execução.
+
+---
 
 ## Configuração
-1) Crie um arquivo de variáveis de ambiente.
-2) Informe as credenciais da API e parâmetros de risco.
-3) Ajuste a estratégia desejada.
 
-Exemplo de variáveis (ilustrativo):
-- FOXBIT_API_KEY
-- FOXBIT_API_SECRET
-- TRADE_SYMBOL
-- MAX_DAILY_LOSS
-- ORDER_SIZE
+Tudo é configurável sem recompilar.
 
-## Execução (pretendida)
-- Inicializar o bot em modo simulação.
-- Validar resultados e logs.
-- Ativar modo real somente após validação.
+Valores vêm do `application.yaml` mas podem ser sobrescritos via:
 
-## Arquitetura (planejada)
-- **Data Provider**: captura de cotações/ordens.
-- **Strategy Engine**: avaliação de sinais.
-- **Risk Manager**: limites e validações.
-- **Order Executor**: envio e monitoramento de ordens.
-- **Logger/Reporter**: logs e métricas.
+- variáveis de ambiente
+- system properties (`-D`)
 
-## Fluxo operacional
-1) Coleta de dados de mercado.
-2) Geração de sinais pela estratégia.
-3) Verificação de risco e limites.
-4) Envio de ordem.
-5) Monitoramento e registro.
+---
 
-## Segurança
-- Chaves de API nunca devem ser commitadas.
-- Usar variáveis de ambiente/secret manager.
-- Aplicar permissões mínimas necessárias.
+## application.yaml
 
-## Roadmap (sugestão)
-- [ ] Estrutura base e configuração.
-- [ ] Integração com API da Foxbit.
-- [ ] Estratégias básicas.
-- [ ] Módulo de risco.
-- [ ] Relatórios e dashboards.
+```yaml
+bot:
+  strategy:
+    buy-below: ${BOT_STRATEGY_BUY_BELOW:300000}
+    sell-above: ${BOT_STRATEGY_SELL_ABOVE:350000}
+    min-qty: ${BOT_MIN_QTY:0.0001}
+    max-qty: ${BOT_MAX_QTY:0.001}
 
-## Contribuição
-- Abra issues para bugs e melhorias.
-- Envie PRs com descrição clara.
-
-## Licença
-A definir.
+  symbols: ${BOT_SYMBOLS:BTC_BRL}
+  tick-interval-ms: ${BOT_TICK_INTERVAL_MS:60000}
+ 
+Executando local
+Exemplo: BTC em dolar, ciclo de 5 minutos
+Windows:
+nginx
+Copiar
+gradlew bootRun ^
+  -DBOT_SYMBOLS=BTC_USDT ^
+  -DBOT_TICK_INTERVAL_MS=300000
+Linux:
+bash
+Copiar
+./gradlew bootRun \
+  -DBOT_SYMBOLS=BTC_USDT \
+  -DBOT_TICK_INTERVAL_MS=300000
+ 
+Variáveis disponíveis
+Variável
+Descrição
+BOT_SYMBOLS
+Lista de mercados separados por vírgula
+BOT_STRATEGY_BUY_BELOW
+Preço abaixo do qual compra
+BOT_STRATEGY_SELL_ABOVE
+Preço acima do qual vende
+BOT_TICK_INTERVAL_MS
+Intervalo do ciclo
+FOXBIT_API_KEY
+Chave da API
+FOXBIT_API_SECRET
+Segredo da API
+Copiar tabela
+ 
+Logs
+Os logs seguem padrão:
+• 
+sem caracteres especiais
+• 
+frases curtas
+• 
+foco operacional
+• 
+amigáveis para leitura por voz
+Exemplo:
+csharp
+Copiar
+[btcbrl] Observando mercado
+[btcbrl] Preco ultimo=370000 compra=369900 venda=370100
+[btcbrl] Estrategia quer BUY
+[btcbrl] Ordem bloqueada Insufficient balance
+[btcbrl] Ciclo finalizado
+ 
+Segurança
+Nenhuma ordem real é enviada.
+A aplicação está em modo simulação.
+ 
+Próximos passos naturais
+Evoluções previstas para maturidade do robô:
+• 
+controle de posição (saber se já está comprado)
+• 
+evitar ordens repetidas
+• 
+percentual de carteira ao invés de quantidade fixa
+• 
+métricas e telemetria
+• 
+persistência de estado
+• 
+execução real
+ 
+Tecnologias
+• 
+Kotlin
+• 
+Java 21
+• 
+Spring Boot 4
+• 
+WebFlux
+• 
+Reactor
+ 
+Objetivo do projeto
+Servir como base sólida para estudo e evolução de um sistema real de trading automatizado.
+ 
+Aviso
+Uso educacional. Não utilize em produção financeira sem auditoria adequada.

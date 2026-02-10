@@ -1,5 +1,6 @@
 package br.com.bot.application.scheduler
 
+
 import br.com.bot.application.config.BotProperties
 import br.com.bot.application.service.TradingCycleService
 import org.springframework.scheduling.annotation.Scheduled
@@ -13,7 +14,6 @@ class BotScheduler(
 
     @Scheduled(fixedDelayString = "\${bot.tick-interval-ms}")
     fun execute() {
-
         properties.symbols.forEach { symbol ->
             tradingCycleService.runCycle(symbol)
         }

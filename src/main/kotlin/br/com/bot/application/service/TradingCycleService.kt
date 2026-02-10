@@ -25,7 +25,7 @@ class TradingCycleService(
 
     fun runCycle(symbol: MarketSymbol) {
 
-        log.info("[{}] Observando o mercado", symbol)
+        log.info("[{}] Observando mercado", symbol)
 
         Mono.zip(
             gateway.getTicker(symbol),
@@ -40,7 +40,7 @@ class TradingCycleService(
                 )
 
                 log.info(
-                    "[{}] Preço → último={} compra={} venda={}",
+                    "[{}] Preco ultimo={} compra={} venda={}",
                     symbol,
                     context.ticker.lastPrice,
                     context.ticker.bestBid,
@@ -53,18 +53,18 @@ class TradingCycleService(
                         val intent = decision.toIntent(context, BigDecimal("0.0001"))
 
                         if (intent == null) {
-                            log.info("[{}] Nenhuma oportunidade encontrada", symbol)
+                            log.info("[{}] Nenhuma oportunidade", symbol)
                             return@flatMap Mono.empty()
                         }
 
-                        log.info("[{}] Estratégia quer → {}", symbol, intent)
+                        log.info("[{}] Estrategia quer {}", symbol, intent)
 
                         risk.evaluate(context, intent)
                             .flatMap { result ->
                                 when (result) {
                                     is RiskResult.Approved -> {
                                         log.warn(
-                                            "[{}] Ordem APROVADA → simulando envio {}",
+                                            "[{}] Ordem aprovada simulando envio {}",
                                             symbol,
                                             intent
                                         )
@@ -73,7 +73,7 @@ class TradingCycleService(
 
                                     is RiskResult.Rejected -> {
                                         log.warn(
-                                            "[{}] Ordem BLOQUEADA → {}",
+                                            "[{}] Ordem bloqueada {}",
                                             symbol,
                                             result.reason
                                         )
@@ -84,7 +84,7 @@ class TradingCycleService(
                     }
             }
             .doOnError { ex ->
-                log.error("[{}] Erro no ciclo → {}", symbol, ex.rootMessage())
+                log.error("[{}] Erro ciclo {}", symbol, ex.rootMessage())
             }
             .doFinally {
                 log.info("[{}] Ciclo finalizado", symbol)
