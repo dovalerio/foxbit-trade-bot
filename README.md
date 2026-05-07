@@ -1,5 +1,10 @@
 # Foxbit Trade Bot
 
+![CI](https://github.com/dovalerio/foxbit-trade-bot/actions/workflows/ci.yml/badge.svg)
+![Java](https://img.shields.io/badge/Java-21-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-green)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-purple)
+
 Bot de trade automatizado para a exchange Foxbit utilizando Kotlin, Spring Boot WebFlux e arquitetura orientada a domínio.
 
 O projeto foi construído priorizando:
